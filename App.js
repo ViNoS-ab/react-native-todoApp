@@ -9,15 +9,9 @@ export default function App() {
  const [text, onChangeText] = useState("Type your Todo ");
  const [todos , setTodos] = useState([]) 
 
- const addTodo = () => {
-  let id = todos[todos.length - 1]?.id || 0 ;
-  let thisId = id * 1 + 1 + "" ;
-  setTodos([...todos , {id: thisId, text} ] );
-  onChangeText("");
- }
- 
-const storeData = async (value) => {
-  try {
+ const storeData = async (value) => {
+   try {
+    console.log('in the sotre call', value)
     await AsyncStorage.setItem('@tasks', JSON.stringify(value));
   } catch (e) {
     console.log(e);
@@ -26,29 +20,39 @@ const storeData = async (value) => {
 
 const getData = async () => {
 	  try {
-	const jsonValue = await AsyncStorage.getItem('@tasks')
-	 return jsonValue != null ? JSON.parse(jsonValue) : null;
-        } catch(err) {
-		console.log(err);
+      const jsonValue = await AsyncStorage.getItem('@tasks')
+      
+      console.log('inside get promise', jsonValue, JSON.parse(jsonValue))
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch(err) {
+      console.log(err);
 	  }
-	}
-			    
+}
+  
+ const addTodo = () => {
+  let id = todos[todos.length - 1]?.id || 0 ;
+   let thisId = id * 1 + 1 + "";
+   const updatedToDoArray = [...todos, { id: thisId, text }];
+  setTodos(updatedToDoArray);
+  storeData(updatedToDoArray)
+  onChangeText("");
+ }
+ 
 
-const remove = id => { 
-setTodos(() =>todos.filter(item => item.id !== id )) ; 
+  const remove = id => { 
+    const updatedToDoArray = todos.filter(item => item.id !== id);
+    setTodos(updatedToDoArray);
 }
 
-useEffect(() => {
- storeData(todos);
-}, [todos] 
-)
+useEffect(() => { 
+  getData().then(storedData => { 
+    if (storedData.length > 0) {
+      setTodos(storedData)
+  console.log('tell me in the get', storedData);
 
- useEffect(() => { 
- const storedData = getData();
-if (storedData.length > 0)  setTodos(storedData);
- console.log(todos)
-}, [] 
-) 
+    }
+  });
+}, []) 
 //return (<View></View>)
   return ( 
    <View style={styles.container}>  
